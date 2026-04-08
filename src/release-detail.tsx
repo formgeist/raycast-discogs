@@ -23,9 +23,7 @@ function buildMarkdown(basic: BasicInformation, detail: ReleaseDetail | null): s
   const artistNames = basic.artists.map((a) => a.name.replace(/\s*\(\d+\)$/, "")).join(", ");
   const year = basic.year ? ` (${basic.year})` : "";
   const labels = basic.labels.map((l) => `${l.name} — ${l.catno}`).join(", ");
-  const formats = basic.formats
-    .map((f) => [f.name, ...(f.descriptions ?? [])].join(" · "))
-    .join(", ");
+  const formats = basic.formats.map((f) => [f.name, ...(f.descriptions ?? [])].join(" · ")).join(", ");
   const genres = [...(basic.genres ?? []), ...(basic.styles ?? [])].join(", ");
 
   let md = `# ${basic.title}${year}\n\n`;

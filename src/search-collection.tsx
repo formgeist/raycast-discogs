@@ -1,12 +1,4 @@
-import {
-  Action,
-  ActionPanel,
-  Icon,
-  List,
-  openExtensionPreferences,
-  showToast,
-  Toast,
-} from "@raycast/api";
+import { Action, ActionPanel, Icon, List, openExtensionPreferences, showToast, Toast } from "@raycast/api";
 import { useMemo, useState } from "react";
 import { ReleaseDetailView } from "./release-detail";
 import { CollectionItem } from "./types";
@@ -63,15 +55,11 @@ function matchesFormatFilter(item: CollectionItem, filter: FormatFilter): boolea
   if (filter === "CD") return formats.some((f) => f === "cd" || f.includes("cd"));
   if (filter === "Cassette") return formats.some((f) => f.includes("cassette"));
   if (filter === "Digital") return formats.some((f) => f.includes("digital") || f.includes("file"));
-  return !formats.some((f) =>
-    ["vinyl", "cd", "cassette", "digital", "file"].some((k) => f.includes(k))
-  );
+  return !formats.some((f) => ["vinyl", "cd", "cassette", "digital", "file"].some((k) => f.includes(k)));
 }
 
 function artistNames(item: CollectionItem): string {
-  return item.basic_information.artists
-    .map((a) => a.name.replace(/\s*\(\d+\)$/, ""))
-    .join(", ");
+  return item.basic_information.artists.map((a) => a.name.replace(/\s*\(\d+\)$/, "")).join(", ");
 }
 
 export default function SearchCollection() {
@@ -80,7 +68,11 @@ export default function SearchCollection() {
   const [sortOrder, setSortOrder] = useState<SortOrder>("Recently Added");
 
   const filtered = useMemo(
-    () => sortItems(items.filter((item) => matchesFormatFilter(item, formatFilter)), sortOrder),
+    () =>
+      sortItems(
+        items.filter((item) => matchesFormatFilter(item, formatFilter)),
+        sortOrder
+      ),
     [items, formatFilter, sortOrder]
   );
 
@@ -145,14 +137,9 @@ export default function SearchCollection() {
             title={info.title}
             subtitle={subtitle}
             accessories={accessory ? [accessory] : undefined}
-            keywords={[
-              artist,
-              label,
-              format,
-              ...(info.genres ?? []),
-              ...(info.styles ?? []),
-              year,
-            ].filter(Boolean)}
+            keywords={[artist, label, format, ...(info.genres ?? []), ...(info.styles ?? []), year].filter(
+              Boolean
+            )}
             actions={
               <ActionPanel>
                 <Action.Push
