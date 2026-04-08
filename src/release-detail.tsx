@@ -19,21 +19,14 @@ function formatTracklist(release: ReleaseDetail): string {
   return `## Tracklist\n\n${rows.join("\n\n")}`;
 }
 
-function buildMarkdown(basic: BasicInformation, detail: ReleaseDetail | null): string {
-  const artistNames = basic.artists.map((a) => a.name.replace(/\s*\(\d+\)$/, "")).join(", ");
-  const year = basic.year ? ` (${basic.year})` : "";
-  const labels = basic.labels.map((l) => `${l.name} — ${l.catno}`).join(", ");
-  const formats = basic.formats.map((f) => [f.name, ...(f.descriptions ?? [])].join(" · ")).join(", ");
-  const genres = [...(basic.genres ?? []), ...(basic.styles ?? [])].join(", ");
+function buildMarkdown(basic: BasicInformation, detail: ReleaseDetail | null, coverImage?: string | null): string {
+  let md = "";
 
-  let md = `# ${basic.title}${year}\n\n`;
-  md += `**Artist:** ${artistNames}\n\n`;
-  if (labels) md += `**Label:** ${labels}\n\n`;
-  if (formats) md += `**Format:** ${formats}\n\n`;
-  if (genres) md += `**Genres:** ${genres}\n\n`;
+  if (coverImage) {
+    md += `<img src="${coverImage}" alt="Cover art" width="300" />\n\n`;
+  }
 
   if (detail) {
-    if (detail.country) md += `**Country:** ${detail.country}\n\n`;
     if (detail.notes) md += `**Notes:** ${detail.notes}\n\n`;
     md += "---\n\n";
     md += formatTracklist(detail);
@@ -90,18 +83,33 @@ export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
   const coverImage = basicInfo.cover_image || detail?.images?.[0]?.uri;
   const discogsUrl = `https://www.discogs.com/release/${releaseId}`;
   const artistName = basicInfo.artists[0]?.name.replace(/\s*\(\d+\)$/, "") ?? "";
+  const artistNames = basicInfo.artists.map((a) => a.name.replace(/\s*\(\d+\)$/, "")).join(", ");
   const searchQuery = encodeURIComponent(`${artistName} ${basicInfo.title}`);
+  const year = basicInfo.year ? String(basicInfo.year) : "";
+  const labels = basicInfo.labels.map((l) => `${l.name} — ${l.catno}`).join(", ");
+  const formats = basicInfo.formats.map((f) => [f.name, ...(f.descriptions ?? [])].join(" · ")).join(", ");
+  const genres = [...(basicInfo.genres ?? []), ...(basicInfo.styles ?? [])].join(", ");
+  const country = detail?.country ?? "";
 
   return (
     <Detail
       isLoading={isLoading}
-      markdown={loadError ? `*Could not load release details.*\n\n${loadError}` : buildMarkdown(basicInfo, detail)}
+      markdown={
+        loadError
+          ? `*Could not load release details.*\n\n${loadError}`
+          : buildMarkdown(basicInfo, detail, coverImage)
+      }
       metadata={
-        coverImage ? (
-          <Detail.Metadata>
-            <Detail.Metadata.Label title="Cover" text="" icon={{ source: coverImage }} />
-          </Detail.Metadata>
-        ) : undefined
+        <Detail.Metadata>
+          <Detail.Metadata.Link title="In Collection" text="Open on Discogs" target={discogsUrl} />
+          <Detail.Metadata.Label title="Album" text={basicInfo.title} />
+          <Detail.Metadata.Label title="Artist" text={artistNames} />
+          {year ? <Detail.Metadata.Label title="Year" text={year} /> : null}
+          {labels ? <Detail.Metadata.Label title="Label" text={labels} /> : null}
+          {formats ? <Detail.Metadata.Label title="Format" text={formats} /> : null}
+          {genres ? <Detail.Metadata.Label title="Genres" text={genres} /> : null}
+          {country ? <Detail.Metadata.Label title="Country" text={country} /> : null}
+        </Detail.Metadata>
       }
       actions={
         <ActionPanel>
