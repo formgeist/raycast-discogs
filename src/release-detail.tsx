@@ -95,9 +95,7 @@ export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
     <Detail
       isLoading={isLoading}
       markdown={
-        loadError
-          ? `*Could not load release details.*\n\n${loadError}`
-          : buildMarkdown(basicInfo, detail, coverImage)
+        loadError ? `*Could not load release details.*\n\n${loadError}` : buildMarkdown(basicInfo, detail, coverImage)
       }
       metadata={
         <Detail.Metadata>
