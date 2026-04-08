@@ -78,8 +78,3 @@ export interface ReleaseDetail {
   country: string;
   uri: string;
 }
-
-export interface Preferences {
-  username: string;
-  token: string;
-}

@@ -1,6 +1,6 @@
 import { Action, ActionPanel, Detail, getPreferenceValues, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { BasicInformation, Preferences, ReleaseDetail } from "./types";
+import { BasicInformation, ReleaseDetail } from "./types";
 
 interface Props {
   releaseId: number;
@@ -45,24 +45,41 @@ function buildMarkdown(basic: BasicInformation, detail: ReleaseDetail | null): s
 }
 
 export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
-  const { token } = getPreferenceValues<Preferences>();
+  const { token } = getPreferenceValues<Preferences.SearchCollection>();
   const [detail, setDetail] = useState<ReleaseDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    setIsLoading(true);
+    setLoadError(null);
     fetch(`https://api.discogs.com/releases/${releaseId}`, {
       headers: {
         Authorization: `Discogs token=${token}`,
         "User-Agent": "RaycastDiscogsExtension/1.0",
       },
     })
-      .then((r) => r.json())
-      .then((data: ReleaseDetail) => {
-        if (!cancelled) setDetail(data);
+      .then((r) => {
+        if (!r.ok) {
+          if (r.status === 401) throw new Error("Invalid token — check your preferences.");
+          if (r.status === 404) throw new Error("Release not found on Discogs.");
+          throw new Error(`Discogs API error: ${r.status}`);
+        }
+        return r.json();
       })
-      .catch(() => {
+      .then((data: ReleaseDetail) => {
         if (!cancelled) {
-          showToast({ style: Toast.Style.Failure, title: "Could not load release details" });
+          setDetail(data);
+          setIsLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : "Could not load release details";
+          setLoadError(message);
+          setIsLoading(false);
+          showToast({ style: Toast.Style.Failure, title: "Could not load release details", message });
         }
       });
     return () => {
@@ -77,8 +94,8 @@ export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
 
   return (
     <Detail
-      isLoading={!detail}
-      markdown={buildMarkdown(basicInfo, detail)}
+      isLoading={isLoading}
+      markdown={loadError ? `*Could not load release details.*\n\n${loadError}` : buildMarkdown(basicInfo, detail)}
       metadata={
         coverImage ? (
           <Detail.Metadata>

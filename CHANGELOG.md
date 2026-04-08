@@ -1,6 +1,6 @@
 # Discogs Changelog
 
-## 1.0.0 — Initial Release
+## [Update] - {PR_MERGE_DATE}
 
 ### Added
 

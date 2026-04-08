@@ -1,4 +1,4 @@
-import { Action, ActionPanel, Icon, List, openExtensionPreferences, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Icon, List, Toast, openExtensionPreferences, showToast } from "@raycast/api";
 import { useMemo, useState } from "react";
 import { ReleaseDetailView } from "./release-detail";
 import { CollectionItem } from "./types";
@@ -137,9 +137,7 @@ export default function SearchCollection() {
             title={info.title}
             subtitle={subtitle}
             accessories={accessory ? [accessory] : undefined}
-            keywords={[artist, label, format, ...(info.genres ?? []), ...(info.styles ?? []), year].filter(
-              Boolean
-            )}
+            keywords={[artist, label, format, ...(info.genres ?? []), ...(info.styles ?? []), year].filter(Boolean)}
             actions={
               <ActionPanel>
                 <Action.Push
