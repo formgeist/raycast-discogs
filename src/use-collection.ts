@@ -1,6 +1,6 @@
 import { getPreferenceValues, Cache, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { CollectionItem, CollectionResponse, Preferences } from "./types";
+import { CollectionItem, CollectionResponse } from "./types";
 
 const cache = new Cache();
 const CACHE_KEY = "discogs-collection";
@@ -66,10 +66,11 @@ async function fetchAllPages(username: string, token: string): Promise<Collectio
 }
 
 export function useCollection() {
-  const { username, token } = getPreferenceValues<Preferences>();
+  const { username, token } = getPreferenceValues<Preferences.SearchCollection>();
   const [items, setItems] = useState<CollectionItem[]>(() => getCached() ?? []);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshCount, setRefreshCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,13 +114,14 @@ export function useCollection() {
     return () => {
       cancelled = true;
     };
-  }, [username, token]);
+  }, [username, token, refreshCount]);
 
   function refresh() {
     cache.remove(CACHE_KEY);
     setIsLoading(true);
     setError(null);
     setItems([]);
+    setRefreshCount((n) => n + 1);
   }
 
   return { items, isLoading, error, refresh };
