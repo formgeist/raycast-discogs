@@ -1,5 +1,6 @@
 import { Action, ActionPanel, Icon, List, Toast, openExtensionPreferences, showToast } from "@raycast/api";
 import { useMemo, useState } from "react";
+import { ArtistDetailView } from "./artist-detail";
 import { ReleaseDetailView } from "./release-detail";
 import { CollectionItem } from "./types";
 import { useCollection } from "./use-collection";
@@ -143,7 +144,19 @@ export default function SearchCollection() {
                 <Action.Push
                   title="View Details"
                   icon={Icon.List}
-                  target={<ReleaseDetailView releaseId={info.id} basicInfo={info} dateAdded={item.date_added} />}
+                  target={<ReleaseDetailView releaseId={info.id} basicInfo={info} dateAdded={item.date_added} collectionItems={items} />}
+                />
+                <Action.Push
+                  title="View Artist"
+                  icon={Icon.Person}
+                  shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
+                  target={
+                    <ArtistDetailView
+                      artistId={info.artists[0]?.id}
+                      artistName={artist}
+                      collectionItems={items}
+                    />
+                  }
                 />
                 <Action.OpenInBrowser
                   title="Open in Discogs"
