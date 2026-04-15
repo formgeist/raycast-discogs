@@ -1,11 +1,13 @@
-import { Action, ActionPanel, Detail, getPreferenceValues, showToast, Toast } from "@raycast/api";
+import { Action, ActionPanel, Detail, getPreferenceValues, Icon, showToast, Toast } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { BasicInformation, ReleaseDetail } from "./types";
+import { ArtistDetailView } from "./artist-detail";
+import { BasicInformation, CollectionItem, ReleaseDetail } from "./types";
 
 interface Props {
   releaseId: number;
   basicInfo: BasicInformation;
   dateAdded?: string;
+  collectionItems?: CollectionItem[];
 }
 
 function formatTracklist(release: ReleaseDetail): string {
@@ -38,7 +40,7 @@ function buildMarkdown(basic: BasicInformation, detail: ReleaseDetail | null, co
   return md;
 }
 
-export function ReleaseDetailView({ releaseId, basicInfo, dateAdded }: Props) {
+export function ReleaseDetailView({ releaseId, basicInfo, dateAdded, collectionItems = [] }: Props) {
   const { token } = getPreferenceValues<Preferences.SearchCollection>();
   const [detail, setDetail] = useState<ReleaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,6 +117,18 @@ export function ReleaseDetailView({ releaseId, basicInfo, dateAdded }: Props) {
       actions={
         <ActionPanel>
           <Action.OpenInBrowser title="Open in Discogs" url={discogsUrl} />
+          <Action.Push
+            title="View Artist"
+            icon={Icon.Person}
+            shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
+            target={
+              <ArtistDetailView
+                artistId={basicInfo.artists[0]?.id}
+                artistName={artistName}
+                collectionItems={collectionItems}
+              />
+            }
+          />
           <Action.CopyToClipboard
             title="Copy Title"
             content={`${artistName} — ${basicInfo.title}`}

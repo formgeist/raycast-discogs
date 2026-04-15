@@ -63,6 +63,28 @@ export interface CollectionResponse {
   releases: CollectionItem[];
 }
 
+export interface ArtistRelease {
+  id: number;
+  title: string;
+  year?: number;
+  thumb?: string;
+  type: string;
+  role: string;
+  artist: string;
+  resource_url: string;
+  status?: string;
+}
+
+export interface ArtistReleasesResponse {
+  pagination: {
+    page: number;
+    pages: number;
+    per_page: number;
+    items: number;
+  };
+  releases: ArtistRelease[];
+}
+
 export interface ReleaseDetail {
   id: number;
   title: string;
