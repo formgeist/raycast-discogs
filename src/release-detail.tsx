@@ -5,6 +5,7 @@ import { BasicInformation, ReleaseDetail } from "./types";
 interface Props {
   releaseId: number;
   basicInfo: BasicInformation;
+  dateAdded?: string;
 }
 
 function formatTracklist(release: ReleaseDetail): string {
@@ -37,7 +38,7 @@ function buildMarkdown(basic: BasicInformation, detail: ReleaseDetail | null, co
   return md;
 }
 
-export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
+export function ReleaseDetailView({ releaseId, basicInfo, dateAdded }: Props) {
   const { token } = getPreferenceValues<Preferences.SearchCollection>();
   const [detail, setDetail] = useState<ReleaseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,6 +91,7 @@ export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
   const formats = basicInfo.formats.map((f) => [f.name, ...(f.descriptions ?? [])].join(" · ")).join(", ");
   const genres = [...(basicInfo.genres ?? []), ...(basicInfo.styles ?? [])].join(", ");
   const country = detail?.country ?? "";
+  const dateAddedFormatted = dateAdded ? new Date(dateAdded).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "";
 
   return (
     <Detail
@@ -107,6 +109,7 @@ export function ReleaseDetailView({ releaseId, basicInfo }: Props) {
           {formats ? <Detail.Metadata.Label title="Format" text={formats} /> : null}
           {genres ? <Detail.Metadata.Label title="Genres" text={genres} /> : null}
           {country ? <Detail.Metadata.Label title="Country" text={country} /> : null}
+          {dateAddedFormatted ? <Detail.Metadata.Label title="Date Added" text={dateAddedFormatted} /> : null}
         </Detail.Metadata>
       }
       actions={
