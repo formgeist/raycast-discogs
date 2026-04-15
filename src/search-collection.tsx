@@ -143,7 +143,7 @@ export default function SearchCollection() {
                 <Action.Push
                   title="View Details"
                   icon={Icon.List}
-                  target={<ReleaseDetailView releaseId={info.id} basicInfo={info} />}
+                  target={<ReleaseDetailView releaseId={info.id} basicInfo={info} dateAdded={item.date_added} />}
                 />
                 <Action.OpenInBrowser
                   title="Open in Discogs"
