@@ -47,7 +47,13 @@ export function ArtistDetailView({ artistId, artistName, collectionItems }: Prop
   const [releases, setReleases] = useState<ArtistRelease[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Collection stores specific release IDs. For masters, match via main_release.
   const collectionIds = new Set(collectionItems.map((item) => item.basic_information.id));
+
+  function isOwned(release: ArtistRelease): boolean {
+    if (release.type === "master") return release.main_release != null && collectionIds.has(release.main_release);
+    return collectionIds.has(release.id);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -55,8 +61,8 @@ export function ArtistDetailView({ artistId, artistName, collectionItems }: Prop
     fetchAllArtistReleases(artistId, token)
       .then((data) => {
         if (!cancelled) {
-          // Only show "Main" role releases to keep the list focused
-          const mainReleases = data.filter((r) => r.role === "Main" && r.type !== "master");
+          // Keep only "Main" role; prefer masters (one per album) over individual pressings
+          const mainReleases = data.filter((r) => r.role === "Main");
           setReleases(mainReleases);
           setIsLoading(false);
         }
@@ -74,8 +80,8 @@ export function ArtistDetailView({ artistId, artistName, collectionItems }: Prop
     };
   }, [artistId, token]);
 
-  const owned = releases.filter((r) => collectionIds.has(r.id));
-  const notOwned = releases.filter((r) => !collectionIds.has(r.id));
+  const owned = releases.filter((r) => isOwned(r));
+  const notOwned = releases.filter((r) => !isOwned(r));
   const discogsArtistUrl = `https://www.discogs.com/artist/${artistId}`;
 
   function releaseAccessories(release: ArtistRelease) {
@@ -89,8 +95,32 @@ export function ArtistDetailView({ artistId, artistName, collectionItems }: Prop
     return inCollection ? { source: Icon.Checkmark, tintColor: Color.Green } : Icon.Music;
   }
 
+  function releaseUrl(release: ArtistRelease): string {
+    return release.type === "master"
+      ? `https://www.discogs.com/master/${release.id}`
+      : `https://www.discogs.com/release/${release.id}`;
+  }
+
+  function ReleaseActions({ release }: { release: ArtistRelease }) {
+    return (
+      <ActionPanel>
+        <Action.OpenInBrowser title="Open in Discogs" url={releaseUrl(release)} />
+        <Action.Push
+          title="View Artist"
+          icon={Icon.Person}
+          shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
+          target={<ArtistDetailView artistId={artistId} artistName={artistName} collectionItems={collectionItems} />}
+        />
+        <Action.OpenInBrowser title="Open Artist on Discogs" url={discogsArtistUrl} />
+      </ActionPanel>
+    );
+  }
+
   return (
     <List isLoading={isLoading} navigationTitle={artistName} searchBarPlaceholder="Search releases…">
+      {!isLoading && owned.length === 0 && notOwned.length === 0 && (
+        <List.EmptyView icon={Icon.Music} title="No releases found" description={`${artistName} has no releases on Discogs.`} />
+      )}
       {owned.length > 0 && (
         <List.Section title="In Your Collection" subtitle={String(owned.length)}>
           {owned.map((release) => (
@@ -99,19 +129,7 @@ export function ArtistDetailView({ artistId, artistName, collectionItems }: Prop
               icon={releaseIcon(release, true)}
               title={release.title}
               accessories={releaseAccessories(release)}
-              actions={
-                <ActionPanel>
-                  <Action.OpenInBrowser
-                    title="Open in Discogs"
-                    url={`https://www.discogs.com/release/${release.id}`}
-                  />
-                  <Action.OpenInBrowser
-                    title="Open Artist on Discogs"
-                    url={discogsArtistUrl}
-                    shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
-                  />
-                </ActionPanel>
-              }
+              actions={<ReleaseActions release={release} />}
             />
           ))}
         </List.Section>
@@ -124,19 +142,7 @@ export function ArtistDetailView({ artistId, artistName, collectionItems }: Prop
               icon={releaseIcon(release, false)}
               title={release.title}
               accessories={releaseAccessories(release)}
-              actions={
-                <ActionPanel>
-                  <Action.OpenInBrowser
-                    title="Open in Discogs"
-                    url={`https://www.discogs.com/release/${release.id}`}
-                  />
-                  <Action.OpenInBrowser
-                    title="Open Artist on Discogs"
-                    url={discogsArtistUrl}
-                    shortcut={{ modifiers: ["cmd", "shift"], key: "a" }}
-                  />
-                </ActionPanel>
-              }
+              actions={<ReleaseActions release={release} />}
             />
           ))}
         </List.Section>

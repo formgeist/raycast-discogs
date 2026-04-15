@@ -73,6 +73,7 @@ export interface ArtistRelease {
   artist: string;
   resource_url: string;
   status?: string;
+  main_release?: number;
 }
 
 export interface ArtistReleasesResponse {
